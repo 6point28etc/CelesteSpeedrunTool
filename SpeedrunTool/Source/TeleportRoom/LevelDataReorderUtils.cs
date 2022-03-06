@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
 
 namespace Celeste.Mod.SpeedrunTool.TeleportRoom {
     public static class LevelDataReorderUtils {
@@ -17,6 +18,7 @@ namespace Celeste.Mod.SpeedrunTool.TeleportRoom {
                 }
             }, {
                 "Celeste/1-ForsakenCityNormal",
+                // ignore rooms not in any%
                 new List<string> {
                     "1",
                     "2",
@@ -24,36 +26,37 @@ namespace Celeste.Mod.SpeedrunTool.TeleportRoom {
                     "4",
                     "3b",
                     "5",
-                    "5z",
-                    "5a",
+                    //"5z",
+                    //"5a",
                     "6",
-                    "6z",
-                    "7zb",
-                    "6zb",
+                    //"6z",
+                    //"7zb",
+                    //"6zb",
                     "6a",
                     "6b",
-                    "s0",
-                    "s1",
+                    //"s0",
+                    //"s1",
                     "6c",
-                    "7z",
-                    "8z",
-                    "8zb",
+                    //"7z",
+                    //"8z",
+                    //"8zb",
                     "7",
                     "8",
-                    "7a",
-                    "9z",
+                    //"7a",
+                    //"9z",
                     "8b",
                     "9",
                     "9b",
-                    "9c",
-                    "10",
-                    "10z",
-                    "10zb",
-                    "11",
-                    "11z",
+                    //"9c",
+                    //"10",
+                    //"10z",
+                    //"10zb",
+                    //"11",     // put this room here for berry route
+                    //"11z",
                     "10a",
+                    "11",       // put this room here for any% route
                     "12",
-                    "12z",
+                    //"12z",
                     "12a",
                     "end",
                 }
@@ -1099,6 +1102,29 @@ namespace Celeste.Mod.SpeedrunTool.TeleportRoom {
                     "solace-07",
                 }
             },
+        };
+
+        public static Dictionary<string, Vector2?> CitySpawnPoints = new() {
+            { "1",   null },
+            { "2",   new Vector2(516,  -64)},
+            { "3",   new Vector2(748,  -304)},
+            { "4",   new Vector2(804,  -480)},
+            { "3b",  new Vector2(1020, -688)},
+            { "5",   new Vector2(1332, -888)},
+            { "6",   new Vector2(1597, -1128)},
+            { "6a",  new Vector2(1717, -1040)},
+            { "6b",  new Vector2(2172, -1296)},
+            { "6c",  new Vector2(2542, -1392)},
+            { "7",   new Vector2(2732, -1630)},
+            { "8",   new Vector2(2908, -1770)},
+            { "8b",  new Vector2(3292, -1872)},
+            { "9",   null },
+            { "9b",  new Vector2(3836, -2104)},
+            { "10a", new Vector2(3722, -2320)},
+            { "11",  new Vector2(3436, -2600)},
+            { "12",  new Vector2(3725, -2712)},
+            { "12a", new Vector2(3938, -2976)},
+            { "end", null },
         };
 
         private static readonly Dictionary<AreaKey, List<LevelData>> ReorderLevelDatas =

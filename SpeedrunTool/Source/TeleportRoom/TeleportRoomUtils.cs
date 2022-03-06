@@ -183,6 +183,7 @@ namespace Celeste.Mod.SpeedrunTool.TeleportRoom {
         }
 
         private static bool? TeleportToPreviousRoom(Level level) {
+            /* Don't use level history
             if (HistoryIndex > 0 && HistoryIndex < RoomHistory.Count) {
                 // Glyph 这种传送到其他房间是不做记录的，所以只回到当前记录的房间
                 if (level.Session.Level == RoomHistory[HistoryIndex].Level) {
@@ -192,6 +193,7 @@ namespace Celeste.Mod.SpeedrunTool.TeleportRoom {
                 TeleportTo(RoomHistory[HistoryIndex]);
                 return true;
             }
+            */
 
             List<LevelData> levelDatas = LevelDataReorderUtils.GetReorderLevelDatas(level);
             if (levelDatas == null) {
@@ -225,7 +227,10 @@ namespace Celeste.Mod.SpeedrunTool.TeleportRoom {
             }
 
             level.Session.Level = lastLevelData.Name;
-            level.Session.RespawnPoint = null;
+            // use special spawn points for 1a
+            AreaKey areaKey = level.Session.Area;
+            level.Session.RespawnPoint = (areaKey.SID + areaKey.Mode == "Celeste/1-ForsakenCityNormal") ?
+                LevelDataReorderUtils.CitySpawnPoints[level.Session.Level] : null;
 
             SearchSummitCheckpoint(false, lastLevelData, level);
             TeleportTo(level.Session);
@@ -233,11 +238,13 @@ namespace Celeste.Mod.SpeedrunTool.TeleportRoom {
         }
 
         private static bool? TeleportToNextRoom(Level level) {
+            /* Don't use level history
             if (HistoryIndex >= 0 && HistoryIndex < RoomHistory.Count - 1) {
                 HistoryIndex++;
                 TeleportTo(RoomHistory[HistoryIndex], true);
                 return true;
             }
+            */
 
             List<LevelData> levelDatas = LevelDataReorderUtils.GetReorderLevelDatas(level);
             if (levelDatas == null) {
@@ -271,7 +278,10 @@ namespace Celeste.Mod.SpeedrunTool.TeleportRoom {
             }
 
             level.Session.Level = nextLevelData.Name;
-            level.Session.RespawnPoint = null;
+            // use special spawn points for 1a
+            AreaKey areaKey = level.Session.Area;
+            level.Session.RespawnPoint = (areaKey.SID + areaKey.Mode == "Celeste/1-ForsakenCityNormal") ? 
+                LevelDataReorderUtils.CitySpawnPoints[level.Session.Level] : null;
 
             SearchSummitCheckpoint(true, nextLevelData, level);
             RecordAndTeleportToNextRoom(level.Session);
