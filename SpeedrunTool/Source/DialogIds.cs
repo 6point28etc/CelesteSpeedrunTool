@@ -46,7 +46,6 @@ public static class DialogIds {
     public const string ClearStateDialogBadeline = "SPEEDRUN_TOOL_CLEAR_STATE_DIALOG_BADELINE";
     public const string NotSavedStateYetDialogBadeline = "SPEEDRUN_TOOL_NOT_SAVED_STATE_YET_DIALOG_BADELINE";
 
-<<<<<<< HEAD
     // ReSharper disable UnusedMember.Global
     // End Point Style
     public const string Flag = "SPEEDRUN_TOOL_FLAG";
@@ -64,30 +63,6 @@ public static class DialogIds {
     public const string Yuri = "SPEEDRUN_TOOL_YURI";
     public const string Random = "SPEEDRUN_TOOL_RANDOM";
     // ReSharper restore UnusedMember.Global
-=======
-        // Hotkey Config
-        public const string Keyboard = "SPEEDRUN_TOOL_KEYBOARD";
-        public const string Controller = "SPEEDRUN_TOOL_CONTROLLER";
-        public const string PressDeleteToRemoveButton = "SPEEDRUN_TOOL_PRESS_DELETE_TO_REMOVE_BUTTON";
-        public const string ToggleHotkeys = "SPEEDRUN_TOOL_TOGGLE_HOTKEYS";
-        public const string OpenDebugMap = "SPEEDRUN_TOOL_OPEN_DEBUG_MAP";
-        public const string ResetRoomTimerPb = "SPEEDRUN_TOOL_RESET_ROOM_TIMER_PB";
-        public const string SwitchRoomTimer = "SPEEDRUN_TOOL_SWITCH_ROOM_TIMER";
-        public const string SetEndPoint = "SPEEDRUN_TOOL_SET_END_POINT";
-        public const string SetAdditionalEndPoint = "SPEEDRUN_TOOL_SET_ADDITIONAL_END_POINT";
-        public const string TeleportToPreviousRoom = "SPEEDRUN_TOOL_TELEPORT_TO_PREVIOUS_ROOM";
-        public const string TeleportToNextRoom = "SPEEDRUN_TOOL_TELEPORT_TO_NEXT_ROOM";
-        public const string AlreadyFirstRoomTooltip = "SPEEDRUN_TOOL_ALREADY_FIRST_ROOM_TOOLTIP";
-        public const string AlreadyFirstRoomDialog = "SPEEDRUN_TOOL_ALREADY_FIRST_ROOM_DIALOG";
-        public const string AlreadyFirstRoomDialogBadeline = "SPEEDRUN_TOOL_ALREADY_FIRST_ROOM_DIALOG_BADELINE";
-        public const string AlreadyLastRoomTooltip = "SPEEDRUN_TOOL_ALREADY_LAST_ROOM_TOOLTIP";
-        public const string AlreadyLastRoomDialog = "SPEEDRUN_TOOL_ALREADY_LAST_ROOM_DIALOG";
-        public const string AlreadyLastRoomDialogBadeline = "SPEEDRUN_TOOL_ALREADY_LAST_ROOM_DIALOG_BADELINE";
-        public const string SwitchAutoLoadState = "SPEEDRUN_TOOL_SWITCH_AUTO_LOAD_STATE";
-        public const string ToggleFullscreen = "SPEEDRUN_TOOL_TOGGLE_FULLSCREEN";
-        public const string IncreaseTimedRooms = "SPEEDRUN_TOOL_INCREASE_TIMED_ROOMS";
-        public const string DecreaseTimedRooms = "SPEEDRUN_TOOL_DECREASE_TIMED_ROOMS";
->>>>>>> master
 
     // Hotkey Config
     public const string Keyboard = "SPEEDRUN_TOOL_KEYBOARD";
