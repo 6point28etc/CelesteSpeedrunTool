@@ -103,9 +103,51 @@ public static class RoomTimerManager {
         });
     }
 
+<<<<<<< HEAD
     private static void SpeedrunTimerDisplayOnUpdate(ILContext il) {
         ILCursor ilCursor = new(il);
         if (ilCursor.TryGotoNext(MoveType.After,
+=======
+            Hotkey.SetEndPoint.RegisterPressedAction(scene => {
+                if (scene is Level {Paused: false} level) {
+                    ClearPbTimes();
+                    CreateEndPoint(level);
+                }
+            });
+
+            Hotkey.SetAdditionalEndPoint.RegisterPressedAction(scene => {
+                if (scene is Level {Paused: false} level) {
+                    if (!EndPoint.IsExist) {
+                        ClearPbTimes();
+                    }
+
+                    CreateEndPoint(level, true);
+                }
+            });
+
+            Hotkey.IncreaseTimedRooms.RegisterPressedAction(scene => {
+                if (scene is Level {Paused: false} level) {
+                    if (Settings.NumberOfRooms < 99) {
+                        Settings.NumberOfRooms++;
+                    }
+                    Tooltip.Show(string.Format(Dialog.Get(DialogIds.OptionState), DialogIds.NumberOfRooms.DialogClean(), Settings.NumberOfRooms));
+                }
+            });
+
+            Hotkey.DecreaseTimedRooms.RegisterPressedAction(scene => {
+                if (scene is Level { Paused: false } level) {
+                    if (Settings.NumberOfRooms > 1) {
+                        Settings.NumberOfRooms--;
+                    }
+                    Tooltip.Show(string.Format(Dialog.Get(DialogIds.OptionState), DialogIds.NumberOfRooms.DialogClean(), Settings.NumberOfRooms));
+                }
+            });
+        }
+
+        private static void SpeedrunTimerDisplayOnUpdate(ILContext il) {
+            ILCursor ilCursor = new(il);
+            if (ilCursor.TryGotoNext(MoveType.After,
+>>>>>>> master
                 ins => ins.OpCode == OpCodes.Ldarg_0,
                 ins => ins.OpCode == OpCodes.Ldarg_0,
                 ins => ins.MatchLdfld<SpeedrunTimerDisplay>("DrawLerp"),

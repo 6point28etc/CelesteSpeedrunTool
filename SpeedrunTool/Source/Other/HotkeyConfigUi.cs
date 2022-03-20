@@ -23,8 +23,69 @@ public class HotkeyConfigUi : TextMenu {
                 return false;
             }
 
+<<<<<<< HEAD
             if (celesteNetClientModuleContext?.GetValue(instance) is not { } context) {
                 return false;
+=======
+        private static readonly List<Buttons> AllButtons = new() {
+            Buttons.A,
+            Buttons.B,
+            Buttons.X,
+            Buttons.Y,
+            Buttons.LeftShoulder,
+            Buttons.RightShoulder,
+            Buttons.LeftTrigger,
+            Buttons.RightTrigger,
+            Buttons.LeftStick,
+            Buttons.RightStick,
+            Buttons.Back,
+            Buttons.BigButton,
+        };
+
+        private static readonly Dictionary<Hotkey, HotkeyConfig> HotkeyConfigs = new List<HotkeyConfig> {
+            new(Hotkey.ToggleHotkeys),
+            new(Hotkey.SaveState, Keys.F7),
+            new(Hotkey.LoadState, Keys.F8),
+            new(Hotkey.ClearState, Keys.F4),
+            new(Hotkey.OpenDebugMap),
+            new(Hotkey.ResetRoomTimerPb, Keys.F9),
+            new(Hotkey.SwitchRoomTimer, Keys.F10),
+            new(Hotkey.SetEndPoint, Keys.F11),
+            new(Hotkey.SetAdditionalEndPoint),
+            new(Hotkey.CheckDeathStatistics),
+            new(Hotkey.TeleportToPreviousRoom, Keys.PageUp),
+            new(Hotkey.TeleportToNextRoom, Keys.PageDown),
+            new(Hotkey.SwitchAutoLoadState),
+            new(Hotkey.ToggleFullscreen),
+            new(Hotkey.IncreaseTimedRooms),
+            new(Hotkey.DecreaseTimedRooms),
+        }.ToDictionary(info => info.Hotkey, info => info);
+
+        private bool closing;
+        private float inputDelay;
+        private bool remapping;
+        private float remappingEase;
+        private bool remappingKeyboard;
+        private Hotkey remappingType;
+        private float timeout;
+
+        static HotkeyConfigUi() {
+            if (Celeste.Instance.Version >= new Version(1, 3, 3, 12)) {
+                AllButtons.AddRange(new[] {
+                    Buttons.DPadUp,
+                    Buttons.DPadDown,
+                    Buttons.DPadLeft,
+                    Buttons.DPadRight,
+                    Buttons.LeftThumbstickUp,
+                    Buttons.LeftThumbstickDown,
+                    Buttons.LeftThumbstickLeft,
+                    Buttons.LeftThumbstickRight,
+                    Buttons.RightThumbstickUp,
+                    Buttons.RightThumbstickDown,
+                    Buttons.RightThumbstickLeft,
+                    Buttons.RightThumbstickRight,
+                });
+>>>>>>> master
             }
 
             if (celesteNetClientContextChat?.GetValue(context) is not { } chat) {
@@ -436,8 +497,28 @@ public class HotkeyConfig {
         return (Buttons?) ModSettings.GetPropertyValue($"Controller{Hotkey}");
     }
 
+<<<<<<< HEAD
     public void SetButton(Buttons? button) {
         ModSettings.SetPropertyValue($"Controller{Hotkey}", button);
+=======
+    public enum Hotkey {
+        ToggleHotkeys,
+        SaveState,
+        LoadState,
+        ClearState,
+        OpenDebugMap,
+        ResetRoomTimerPb,
+        SwitchRoomTimer,
+        SetEndPoint,
+        SetAdditionalEndPoint,
+        CheckDeathStatistics,
+        TeleportToPreviousRoom,
+        TeleportToNextRoom,
+        SwitchAutoLoadState,
+        ToggleFullscreen,
+        IncreaseTimedRooms,
+        DecreaseTimedRooms,
+>>>>>>> master
     }
 
     public List<Keys> GetKeys() {
