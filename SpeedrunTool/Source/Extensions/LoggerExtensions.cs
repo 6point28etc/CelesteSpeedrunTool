@@ -1,7 +1,4 @@
-using System;
-using Monocle;
 #if DEBUG
-using Microsoft.Xna.Framework;
 #endif
 
 namespace Celeste.Mod.SpeedrunTool.Extensions {
@@ -22,8 +19,8 @@ namespace Celeste.Mod.SpeedrunTool.Extensions {
             Logger.Log(logLevel, Tag, $"{levelInfo}{frames}{message}");
         }
 
-        public static void DebugLog(this object message, LogLevel logLevel = LogLevel.Info) {
 #if DEBUG
+        public static void DebugLog(this object message, LogLevel logLevel = LogLevel.Info) {
             message.Log(logLevel);
             Color color;
             switch (logLevel) {
@@ -43,7 +40,7 @@ namespace Celeste.Mod.SpeedrunTool.Extensions {
             } catch (Exception) {
                 // ignored
             }
-#endif
         }
+#endif
     }
 }
