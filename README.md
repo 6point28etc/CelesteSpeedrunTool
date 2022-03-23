@@ -2,6 +2,9 @@
 
 [中文说明](./README_CN.md)
 
+# About This Branch
+This branch is not intended for general use. It contains changes highly specific to the city any% run and / or my personal preferences that may break other features or be cursed in general. For a general-use speedrun tool, see the master branch of this repo, or probably just the normal DemoJameson repo -- chances are any changes from my master branch have been merged into that when you're reading this.
+
 ## Download
 [GameBanana](https://gamebanana.com/tools/6597)
 
