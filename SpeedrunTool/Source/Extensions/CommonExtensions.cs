@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Celeste.Mod.SpeedrunTool.Extensions;
 
@@ -18,11 +19,18 @@ internal static class CommonExtensions {
         return defaultValue;
     }
 
-    public static void AddRangeSafe(this IDictionary dict, IDictionary other) {
+    public static void SetRange(this IDictionary dict, IDictionary other) {
         foreach (DictionaryEntry dictionaryEntry in other) {
-            if (!dict.Contains(other)) {
-                dict.Add(dictionaryEntry.Key, dictionaryEntry.Value);
-            }
+            dict[dictionaryEntry.Key] = dictionaryEntry.Value;
         }
+    }
+
+    public static void Set<TKey, TValue>(this ConditionalWeakTable<TKey, TValue> weakTable, TKey key, TValue value) where TKey : class where TValue : class {
+        weakTable.Remove(key);
+        weakTable.Add(key, value);
+    }
+
+    public static bool ContainsKey<TKey, TValue>(this ConditionalWeakTable<TKey, TValue> weakTable, TKey key) where TKey : class where TValue : class {
+        return weakTable.TryGetValue(key, out TValue _);
     }
 }

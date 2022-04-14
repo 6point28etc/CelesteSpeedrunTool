@@ -5,11 +5,16 @@ using FMOD.Studio;
 using Force.DeepCloner;
 using Force.DeepCloner.Helpers;
 using Microsoft.Xna.Framework.Graphics;
+using MonoMod.Utils;
 using NLua;
 
 namespace Celeste.Mod.SpeedrunTool.SaveLoad;
 
 public static class DeepClonerUtils {
+    [ThreadStatic] private static Stack<Component> backupComponents;
+    [ThreadStatic] private static Stack<object> backupHashSet;
+    [ThreadStatic] private static Dictionary<object, object> backupDict;
+
     // 共用 DeepCloneState 可使多次 DeepClone 复用相同对象避免多次克隆同一对象
     private static DeepCloneState sharedDeepCloneState = new();
 
@@ -17,7 +22,7 @@ public static class DeepClonerUtils {
     private static void Config() {
         // Clone 开始时，判断哪些类型是直接使用原对象而不 DeepClone 的
         // Before cloning, determine which types use the original object directly
-        DeepCloner.AddKnownTypesProcessor(type => {
+        DeepCloner.SetKnownTypesProcessor(type => {
             if (
                 // Celeste Singleton
                 type == typeof(Celeste)
@@ -53,7 +58,7 @@ public static class DeepClonerUtils {
 
         // Clone 对象的字段前，判断哪些类型是直接使用原对象或者自行通过其它方法 clone
         // Before cloning object's field, determine which types are directly used by the original object
-        DeepCloner.AddPreCloneProcessor((sourceObj, deepCloneState) => {
+        DeepCloner.SetPreCloneProcessor((sourceObj, deepCloneState) => {
             if (sourceObj == null) {
                 return null;
             }
@@ -67,6 +72,7 @@ public static class DeepClonerUtils {
                             return level;
                         }
                     }
+
                     return sourceObj;
                 }
 
@@ -85,8 +91,7 @@ public static class DeepClonerUtils {
 
                 if (sourceObj is CassetteBlockManager manager) {
                     // isLevelMusic = true 时 sfx 自动等于 Audio.CurrentMusicEventInstance，无需重建
-                    if (manager.GetFieldValue("sfx") is EventInstance sfx &&
-                        !(bool)manager.GetFieldValue("isLevelMusic")) {
+                    if (manager.GetFieldValue("sfx") is EventInstance sfx && !manager.GetFieldValue<bool>("isLevelMusic")) {
                         sfx.NeedManualClone();
                     }
 
@@ -120,52 +125,71 @@ public static class DeepClonerUtils {
 
         // Clone 对象的字段后，进行自定的处理
         // After cloning, perform custom processing
-        DeepCloner.AddPostCloneProcessor((sourceObj, clonedObj, deepCloneState) => {
-            if (clonedObj == null) {
+        DeepCloner.SetPostCloneProcessor((sourceObj, clonedObj, deepCloneState) => {
+            if (sourceObj == null) {
                 return null;
             }
 
             lock (sourceObj) {
+                Type type = clonedObj.GetType();
+
                 // 修复：DeepClone 的 hashSet.Containes(里面存在的引用对象) 总是返回 False
                 // 原因：没有重写 GetHashCode 方法 https://github.com/force-net/DeepCloner/issues/17#issuecomment-678650032
                 // Fix: DeepClone's hashSet.Contains (ReferenceType) always returns false, Dictionary has no such problem
-                if (clonedObj.GetType().IsHashSet(out Type hashSetElementType) && !hashSetElementType.IsSimple()) {
-                    IEnumerator enumerator = ((IEnumerable)clonedObj).GetEnumerator();
 
-                    List<object> backup = new();
-                    while (enumerator.MoveNext()) {
-                        backup.Add(enumerator.Current);
-                    }
-
-                    if (backup.Count == 0) {
-                        return clonedObj;
-                    }
-
-                    clonedObj.InvokeMethod("Clear");
-                    backup.ForEach(obj => {
-                        if (obj != null) {
-                            clonedObj.InvokeMethod("Add", obj);
+                // 手动处理最常见的 HashSet<Component>/Dictionary<string, object> 类型，避免使用发射以及判断类型
+                if (clonedObj is HashSet<Component> hashSet) {
+                    backupComponents ??= new Stack<Component>();
+                    foreach (Component component in hashSet) {
+                        if (component != null) {
+                            backupComponents.Push(component);
                         }
-                    });
-                }
+                    }
 
-                // 同上
-                if (clonedObj.GetType().IsIDictionary(out Type dictKeyType, out Type _)
-                    && !dictKeyType.IsSimple() && clonedObj is IDictionary {Count: > 0} clonedDict
-                   ) {
-                    Dictionary<object, object> backupDict = new();
-                    backupDict.AddRangeSafe(clonedDict);
-                    clonedDict.Clear();
-                    clonedDict.AddRangeSafe(backupDict);
-                }
-
-                // LightingRenderer 需要，不然不会发光
-                if (clonedObj is VertexLight vertexLight) {
+                    hashSet.Clear();
+                    while (backupComponents.Count > 0) {
+                        hashSet.Add(backupComponents.Pop());
+                    }
+                } else if (clonedObj is Dictionary<string, object> dictionary) {
+                    backupDict ??= new Dictionary<object, object>();
+                    backupDict.SetRange(dictionary);
+                    dictionary.Clear();
+                    dictionary.SetRange(backupDict);
+                    backupDict.Clear();
+                } else if (clonedObj is VertexLight vertexLight) {
+                    // LightingRenderer 需要，不然不会发光
                     vertexLight.Index = -1;
+                } else if (clonedObj is VirtualAsset virtualAsset
+                           && (StateManager.Instance.State == State.Loading || !Thread.CurrentThread.IsMainThread())) {
+                    // 预克隆的资源需要等待 LoadState 中移除实体之后才能判断是否需要 Reload，必须等待主线程中再操作
+                    SaveLoadAction.VirtualAssets.Add(virtualAsset);
+                } else if (type.IsHashSet(out Type hashSetElementType) && !hashSetElementType.IsSimple()) {
+                    IEnumerator enumerator = ((IEnumerable)clonedObj).GetEnumerator();
+                    backupHashSet ??= new Stack<object>();
+                    while (enumerator.MoveNext()) {
+                        if (enumerator.Current is { } element) {
+                            backupHashSet.Push(element);
+                        }
+                    }
+
+                    if (backupHashSet.Count >= 0) {
+                        clonedObj.InvokeMethod("Clear");
+                        FastReflectionDelegate addDelegate = type.GetMethodDelegate("Add");
+                        while (backupHashSet.Count > 0) {
+                            addDelegate.Invoke(clonedObj, backupHashSet.Pop());
+                        }
+                    }
+                } else if (type.IsIDictionary(out Type dictKeyType, out Type _) && !dictKeyType.IsSimple() &&
+                           clonedObj is IDictionary {Count: > 0} clonedDict) {
+                    backupDict ??= new Dictionary<object, object>();
+                    backupDict.SetRange(clonedDict);
+                    clonedDict.Clear();
+                    clonedDict.SetRange(backupDict);
+                    backupDict.Clear();
                 }
 
                 // Clone dynData.Data
-                if (sourceObj.GetType() is {IsClass: true} objType && !DynDataUtils.IgnoreObjects.TryGetValue(sourceObj, out object _)) {
+                if (type is {IsClass: true} objType && !DynDataUtils.IgnoreObjects.ContainsKey(sourceObj)) {
                     bool cloned = false;
 
                     do {
@@ -195,19 +219,13 @@ public static class DeepClonerUtils {
                 // Clone DynamicData
                 if (DynDataUtils.ExistDynamicData(sourceObj)) {
                     object[] parameters = {sourceObj, null};
-                    if ((bool)DynDataUtils.DynamicDataMap.InvokeMethod("TryGetValue", parameters)) {
+                    if (DynDataUtils.DataMapTryGetValue(parameters)) {
                         object sourceValue = parameters[1];
                         if (sourceValue.GetFieldValue("Data") is Dictionary<string, object> data && data.Count != 0) {
-                            DynDataUtils.DynamicDataMap.InvokeMethod("Add", clonedObj, sourceValue.DeepClone(deepCloneState));
+                            DynDataUtils.DataMapAdd(clonedObj, sourceValue.DeepClone(deepCloneState));
                             DynDataUtils.RecordDynamicDataObject(clonedObj);
                         }
                     }
-                }
-
-                // 预克隆的资源需要等待 LoadState 中移除实体之后才能判断是否需要 Reload，必须等待主线程中再操作
-                if (clonedObj is VirtualAsset virtualAsset
-                    && (Thread.CurrentThread.Name != "Main Thread" || StateManager.Instance.State == State.Loading)) {
-                    SaveLoadAction.VirtualAssets.Add(virtualAsset);
                 }
             }
 
@@ -217,9 +235,9 @@ public static class DeepClonerUtils {
 
     [Unload]
     private static void Clear() {
-        DeepCloner.ClearKnownTypesProcessors();
-        DeepCloner.ClearPreCloneProcessors();
-        DeepCloner.ClearPostCloneProcessors();
+        DeepCloner.ClearKnownTypesProcessor();
+        DeepCloner.ClearPreCloneProcessor();
+        DeepCloner.ClearPostCloneProcessor();
     }
 
     private static void InitSharedDeepCloneState() {

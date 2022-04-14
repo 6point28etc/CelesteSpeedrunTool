@@ -7,7 +7,7 @@ using MonoMod.Cil;
 namespace Celeste.Mod.SpeedrunTool.SaveLoad;
 
 public static class StateMarkUtils {
-    private const string StartFromSaveSate = nameof(StartFromSaveSate);
+    private const string SavedStateFlag = "SpeedrunTool_SavedSate";
     private static SpriteBank mySpriteBank;
 
     [Load]
@@ -41,12 +41,12 @@ public static class StateMarkUtils {
         }
 
         // recolor timer
-        level.SetExtendedBoolean(StartFromSaveSate, true);
+        SetSavedStateFlag(level);
     }
 
     private static void StrawberryOnAdded(On.Celeste.Strawberry.orig_Added orig, Strawberry self, Scene scene) {
         orig(self, scene);
-        if (self.Golden && !StateManager.Instance.SavedByTas && scene.GetExtendedBoolean(StartFromSaveSate)) {
+        if (self.Golden && !StateManager.Instance.SavedByTas && scene is Level level && GetSavedStateFlag(level)) {
             TryRecolorSprite(self);
         }
     }
@@ -87,7 +87,7 @@ public static class StateMarkUtils {
 
         cursor.EmitDelegate<Func<bool>>(() =>
             ModSettings.RoomTimerType == RoomTimerType.Off
-            && Engine.Scene is Level {Completed: false} level && level.GetExtendedBoolean(StartFromSaveSate) && !StateManager.Instance.SavedByTas
+            && Engine.Scene is Level {Completed: false} level && GetSavedStateFlag(level) && !StateManager.Instance.SavedByTas
         );
 
         ILLabel beforeInstr = cursor.DefineLabel();
@@ -117,9 +117,25 @@ public static class StateMarkUtils {
             )) {
             ilCursor.Emit(OpCodes.Ldarg_0).EmitDelegate<Action<Level>>(level => {
                 if (!StateManager.Instance.IsSaved) {
-                    level.SetExtendedBoolean(StartFromSaveSate, false);
+                    RemoveSavedStateFlag(level);
                 }
             });
         }
+    }
+
+    private static void SetSavedStateFlag(Level level) {
+        level.Session.SetFlag(SavedStateFlag);
+    }
+
+    private static bool GetSavedStateFlag(Level level) {
+        return level.Session.GetFlag(SavedStateFlag);
+    }
+
+    private static void RemoveSavedStateFlag(Level level) {
+        level.Session.SetFlag(SavedStateFlag, false);
+    }
+
+    public static void CopySavedStateFlag(Session from, Session to) {
+        to.SetFlag(SavedStateFlag, from.GetFlag(SavedStateFlag));
     }
 }
