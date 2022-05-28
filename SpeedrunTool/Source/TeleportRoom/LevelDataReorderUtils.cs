@@ -1096,7 +1096,7 @@ public static class LevelDataReorderUtils {
                         new("2",   516,  -64),
                         new("3",   748,  -304),
                         new("4",   804,  -480),
-                        new("3b",  1020, -688),
+                        new("3b",  1020.2f, -688),
                         new("5",   1332, -888),
                         new("6",   1597, -1128),
                         new("6a",  1717, -1040),

@@ -166,7 +166,9 @@ public static class TeleportRoomUtils {
         if (level.GetPlayer() != null) {
             level.Camera.Position = level.GetPlayer().CameraTarget;
         }
-
+        Player player = level.GetPlayer();
+        player.MoveToX(level.Session.RespawnPoint.Value.X);
+        player.MoveToY(level.Session.RespawnPoint.Value.Y);
         level.Update();
     }
 
